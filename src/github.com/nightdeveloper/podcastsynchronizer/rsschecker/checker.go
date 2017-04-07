@@ -178,7 +178,9 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 func (c *Checker) StartLoop() {
 	log.Println("checker loop started")
 
-	//for{
+	for{
+		c.config.Load()
+
 		log.Println("tick (", len(c.config.Podcasts), " podcasts)");
 
 		for  _, p := range c.config.Podcasts {
@@ -195,5 +197,5 @@ func (c *Checker) StartLoop() {
 		for time.Since(startTime).Hours() < 2 {
 			time.Sleep(time.Duration(1) * time.Minute);
 		}
-	//}
+	}
 }
