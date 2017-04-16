@@ -43,16 +43,12 @@ func (c *Config) Load() {
 		panic("config decoding error");
 	}
 
-	out, _ := json.Marshal(c);
-
 	if c.DropboxDir == "" || len(c.Podcasts) == 0 {
 		log.Fatal("we need dropbox dir and podcasts list to go")
 		panic("config content error")
 	}
 
-	log.Println("config read: " + string(out));
-
-	log.Println("podcasts: ", len(c.Podcasts))
+	log.Println("config read");
 }
 
 func (c *Config) Save() {

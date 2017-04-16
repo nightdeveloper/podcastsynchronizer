@@ -170,7 +170,7 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 
 	p.Name = rss.Channel.Title
 
-	log.Println("check finished: " + rss.Channel.Title)
+	log.Println("check finished: " + rss.Channel.Title + " (last updated: " + p.LastUpdated.String() + ")");
 
 	c.config.Save()
 }
@@ -181,7 +181,7 @@ func (c *Checker) StartLoop() {
 	for{
 		c.config.Load()
 
-		log.Println("tick (", len(c.config.Podcasts), " podcasts)");
+		log.Printf("tick (%d podcasts)", len(c.config.Podcasts));
 
 		for  _, p := range c.config.Podcasts {
 			log.Println("want to check podcast " + p.Url)
