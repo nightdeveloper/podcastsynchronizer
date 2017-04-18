@@ -195,7 +195,7 @@ func (c *Checker) StartLoop() {
 
 		startTime := time.Now();
 		for time.Since(startTime).Hours() < 2 {
-			time.Sleep(time.Duration(1) * time.Minute);
+			time.Sleep(time.Duration(5) * time.Minute);
 		}
 	}
 }
