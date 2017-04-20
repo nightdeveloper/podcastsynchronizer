@@ -131,7 +131,10 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 	}
 
 	var firstGuid = "";
-	var depth = 5
+	var depth = 5;
+	if (p.MaxDepth > 0) {
+		depth = p.MaxDepth;
+	}
 	var wasErrors = false;
 	for  _, i := range rss.Channel.Item {
 
@@ -145,14 +148,33 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 
 		if depth > 0 {
 			if (i.Enclosure.URL != "") {
+
 				log.Println("url " + i.Enclosure.URL);
-				err := c.downloadPodcast(p, &i);
-				if err == nil {
-					p.Status = "downloaded ok"
-					log.Println("downloaded ok")
-				} else {
-					p.Status = "download error: " + err.Error()
-					wasErrors = true
+
+				var isFilteredOk = true;
+
+				if (p.Filters != nil) {
+					log.Println("filtering...");
+					var isMatch = false;
+					for _, f := range p.Filters {
+						if (strings.Contains(i.Title, f.Title)) {
+							isMatch = true;
+						}
+					}
+					isFilteredOk = isMatch;
+
+					log.Println("filtered", isFilteredOk);
+				}
+
+				if (isFilteredOk) {
+					err := c.downloadPodcast(p, &i);
+					if err == nil {
+						p.Status = "downloaded ok"
+						log.Println("downloaded ok")
+					} else {
+						p.Status = "download error: " + err.Error()
+						wasErrors = true
+					}
 				}
 				depth--
 			}
@@ -167,6 +189,8 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 		p.LastGuid = firstGuid
 		p.LastUpdated = time.Now()
 	}
+
+	p.Status = "Checked successfully"
 
 	p.Name = rss.Channel.Title
 

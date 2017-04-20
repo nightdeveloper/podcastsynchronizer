@@ -8,8 +8,14 @@ import (
 	"io/ioutil"
 )
 
+type Filter struct {
+	Title		string		`json:"title"`
+}
+
 type Podcast struct {
 	Url		string		`json:"url"`
+	MaxDepth	int		`json:"maxDepth,omitempty"`
+	Filters		[]*Filter	`json:"filters,omitempty"`
 	Name		string		`json:"name,omitempty"`
 	LastUpdated	time.Time	`json:"lastUpdated,omitempty"`
 	LastChecked	time.Time	`json:"lastChecked,omitempty"`
