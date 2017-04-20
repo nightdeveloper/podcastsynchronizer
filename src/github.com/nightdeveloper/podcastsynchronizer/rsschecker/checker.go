@@ -6,6 +6,7 @@ import (
 	"github.com/nightdeveloper/podcastsynchronizer/structs"
 	"io/ioutil"
 	"encoding/xml"
+	"net/url"
 	"time"
 	"strings"
 	"errors"
@@ -37,7 +38,9 @@ func (c *Checker) downloadPodcast(p *settings.Podcast, i *structs.ItemStruct) er
 		return nil;
 	}
 
-	var parts = strings.Split( i.Enclosure.URL, "/");
+	var fileUrl, _ = url.QueryUnescape(i.Enclosure.URL);
+
+	var parts = strings.Split( fileUrl, "/");
 
 	if len(parts) == 0 {
 		log.Println("url parts are zero length - " + i.Enclosure.URL)
@@ -135,6 +138,9 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 	if (p.MaxDepth > 0) {
 		depth = p.MaxDepth;
 	}
+
+	log.Println("checking with depth", depth)
+
 	var wasErrors = false;
 	for  _, i := range rss.Channel.Item {
 
@@ -154,7 +160,7 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 				var isFilteredOk = true;
 
 				if (p.Filters != nil) {
-					log.Println("filtering...");
+					log.Println("filtering [", i.Title, "]...");
 					var isMatch = false;
 					for _, f := range p.Filters {
 						if (strings.Contains(i.Title, f.Title)) {
