@@ -17,12 +17,17 @@ import (
 
 type Checker struct {
 	config	*settings.Config
+	chatChannel chan string
 }
 
 func NewChecker(config *settings.Config) (c *Checker) {
 	ch := new(Checker);
 	ch.config = config;
 	return ch;
+}
+
+func (c *Checker) SetChatChannel(cc chan string) {
+	c.chatChannel = cc;
 }
 
 func (c *Checker) downloadPodcast(p *settings.Podcast, i *structs.ItemStruct) error {
@@ -89,6 +94,10 @@ func (c *Checker) downloadPodcast(p *settings.Podcast, i *structs.ItemStruct) er
 		p.Status = err.Error()
 		log.Println(p.Url + " file download error: " + err.Error())
 		return errors.New("download error: " + err.Error());
+	} else {
+		if (c.chatChannel != nil) {
+			c.chatChannel <- "New podcast: " + i.Title;
+		}
 	}
 
 	return nil;

@@ -1,8 +1,0 @@
-.idea
-bin
-logs/app.log
-pkg
-temp
-config.json
-src/github.com/getlantern
-src/github.com/oxtoacart

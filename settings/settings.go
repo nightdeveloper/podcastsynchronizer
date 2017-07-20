@@ -30,7 +30,7 @@ type Config struct {
 
 func (c *Config) getFileName() string {
 	absPath, _ := filepath.Abs("./");
-	return absPath + "config.json";
+	return absPath + "config_ps.json";
 }
 
 func (c *Config) Load() {
