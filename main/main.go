@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"fmt"
 	"os"
 	"io"
 	"github.com/nightdeveloper/podcastsynchronizer/rsschecker"
