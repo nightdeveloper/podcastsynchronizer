@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 	"io"
-	"github.com/getlantern/systray"
-	"github.com/getlantern/systray/example/icon"
 	"github.com/nightdeveloper/podcastsynchronizer/rsschecker"
 	"github.com/nightdeveloper/podcastsynchronizer/settings"
 )
@@ -33,20 +31,5 @@ func main() {
 	checker := rsschecker.NewChecker(&c)
 	go checker.StartLoop();
 
-	// systray
-	systray.Run(onReady)
-}
-
-func onReady() {
-	systray.SetIcon(icon.Data)
-	systray.SetTitle("Podcast Synchronizer app")
-	systray.SetTooltip("podcast synchronizer app")
-
-	mQuit := systray.AddMenuItem("Quit", "Quit app")
-	go func() {
-		<-mQuit.ClickedCh
-		systray.Quit()
-		os.Exit(0)
-		fmt.Println("Quit now...")
-	}()
+	for {}
 }
