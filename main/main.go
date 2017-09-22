@@ -31,5 +31,5 @@ func main() {
 	checker := rsschecker.NewChecker(&c)
 	go checker.StartLoop();
 
-	for {}
+	select {}
 }
