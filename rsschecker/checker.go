@@ -154,16 +154,19 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 	var wasErrors = false;
 	for  _, i := range rss.Channel.Item {
 
+		log.Println("item hit")
+
 		if firstGuid == "" {
 			firstGuid = i.Guid;
 		}
 
 		if i.Guid != "" && i.Guid == p.LastGuid {
+			log.Println("last guid hit")
 			break
 		}
 
 		if depth > 0 {
-			if (i.Enclosure.URL != "") {
+			if i.Enclosure.URL != "" {
 
 				log.Println("url " + i.Enclosure.URL);
 
