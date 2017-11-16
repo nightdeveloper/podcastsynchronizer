@@ -34,8 +34,6 @@ func (c *Checker) downloadPodcast(p *settings.Podcast, i *structs.ItemStruct) er
 
 	if !strings.Contains(i.Enclosure.Type, "audio") && i.Enclosure.Type != "" {
 
-		c.chatChannel <- "New rss: " + i.Title
-
 		log.Println("type " + i.Enclosure.Type + " is not mp3");
 		return errors.New("enclosure type is not mp3 (" + i.Enclosure.Type + ")");
 	}
@@ -161,7 +159,7 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 		}
 
 		if i.Guid != "" && i.Guid == p.LastGuid {
-			break;
+			break
 		}
 
 		if depth > 0 {
@@ -195,6 +193,8 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 					}
 				}
 				depth--
+			} else {
+				c.chatChannel <- "New rss: " + i.Title
 			}
 		}
 
