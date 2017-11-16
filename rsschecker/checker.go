@@ -33,12 +33,15 @@ func (c *Checker) SetChatChannel(cc chan string) {
 func (c *Checker) downloadPodcast(p *settings.Podcast, i *structs.ItemStruct) error {
 
 	if !strings.Contains(i.Enclosure.Type, "audio") && i.Enclosure.Type != "" {
+
+		c.chatChannel <- "New rss: " + i.Title
+
 		log.Println("type " + i.Enclosure.Type + " is not mp3");
 		return errors.New("enclosure type is not mp3 (" + i.Enclosure.Type + ")");
 	}
 
 	log.Println("found file " + i.Enclosure.URL);
-	if (i.Enclosure.URL == "") {
+	if i.Enclosure.URL == "" {
 		log.Println("empty file :(");
 		return nil;
 	}
@@ -53,7 +56,7 @@ func (c *Checker) downloadPodcast(p *settings.Podcast, i *structs.ItemStruct) er
 	}
 
 	var pf = parts[len(parts) - 1];
-	if (pf == "") {
+	if pf == "" {
 		pf = parts[len(parts) - 2];
 	}
 
@@ -135,7 +138,7 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 	}
 
 	if len(rss.Channel.Item) == 0 {
-		if (err != nil ) {
+		if err != nil  {
 			p.Status = err.Error()
 		} else { p.Status = "no error supplied"; }
 		log.Println(p.Url + " no items in channel")
