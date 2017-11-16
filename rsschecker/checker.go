@@ -194,6 +194,7 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 				}
 				depth--
 			} else {
+				log.Println("rss item with no url")
 				c.chatChannel <- "New rss: " + i.Title
 			}
 		}
