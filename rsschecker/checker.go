@@ -145,8 +145,8 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 
 	var firstGuid = "";
 	var depth = 5;
-	if (p.MaxDepth > 0) {
-		depth = p.MaxDepth;
+	if p.MaxDepth > 0 {
+		depth = p.MaxDepth
 	}
 
 	log.Println("checking with depth", depth)
@@ -156,11 +156,17 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 
 		log.Println("item hit")
 
-		if firstGuid == "" {
-			firstGuid = i.Guid;
+		var guid = i.Guid
+
+		if guid == "" {
+			guid = i.PubDate + " " + i.Title;
 		}
 
-		if i.Guid != "" && i.Guid == p.LastGuid {
+		if firstGuid == "" {
+			firstGuid = guid
+		}
+
+		if guid != "" && guid == p.LastGuid {
 			log.Println("last guid hit")
 			break
 		}
@@ -172,11 +178,11 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 
 				var isFilteredOk = true;
 
-				if (p.Filters != nil) {
+				if p.Filters != nil {
 					log.Println("filtering [", i.Title, "]...");
 					var isMatch = false;
 					for _, f := range p.Filters {
-						if (strings.Contains(i.Title, f.Title)) {
+						if strings.Contains(i.Title, f.Title) {
 							isMatch = true;
 						}
 					}
@@ -185,7 +191,7 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 					log.Println("filtered", isFilteredOk);
 				}
 
-				if (isFilteredOk) {
+				if isFilteredOk {
 					err := c.downloadPodcast(p, &i);
 					if err == nil {
 						p.Status = "downloaded ok"
