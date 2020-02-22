@@ -15,6 +15,8 @@ import (
 	"io"
 )
 
+var DEFAULT_SEARCH_DEPTH = 5
+
 type Checker struct {
 	config	*settings.Config
 	chatChannel chan string
@@ -118,15 +120,15 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 	}
 
 	defer response.Body.Close()
-	bytes, _ := ioutil.ReadAll(response.Body)
+	bytes, err := ioutil.ReadAll(response.Body)
+
 	if err != nil {
 		p.Status = err.Error()
 		log.Println(p.Url + " read error")
 		return
 	}
 
-	var rss structs.RSSStruct;
-
+	var rss structs.RSSStruct
 	err = xml.Unmarshal(bytes, &rss)
 
 	if err != nil {
@@ -135,16 +137,66 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 		return
 	}
 
-	if len(rss.Channel.Item) == 0 {
-		if err != nil  {
-			p.Status = err.Error()
-		} else { p.Status = "no error supplied"; }
-		log.Println(p.Url + " no items in channel")
-		return;
+	c.ProcessEntry(rss, p)
+	c.ProcessChannel(rss, p)
+
+	p.Status = "Checked successfully"
+	p.Name = rss.Channel.Title
+	log.Println("check finished: " + rss.Channel.Title + " (last updated: " + p.LastUpdated.String() + ")");
+	c.config.Save()
+}
+
+func (c *Checker) ProcessEntry(rss structs.RSSStruct, p *settings.Podcast) {
+	if len(rss.Entry) == 0 {
+		log.Println(p.Url + " no items in entry")
+		return
 	}
 
+	var depth = DEFAULT_SEARCH_DEPTH
+
+	var firstGuid = ""
+	if p.MaxDepth > 0 {
+		depth = p.MaxDepth
+	}
+
+	log.Println("checking with depth", depth)
+
+	for  _, i := range rss.Entry {
+
+		log.Println("entry item hit")
+		var guid = i.VideoId
+
+		if firstGuid == "" {
+			firstGuid = guid
+		}
+
+		if guid != "" && guid == p.LastGuid {
+			log.Println("last guid hit")
+			break
+		}
+
+		if depth > 0 {
+			log.Println("title " + i.Title)
+			c.chatChannel <- "New entry: " + i.Title
+			depth--
+		}
+	}
+
+	if firstGuid != p.LastGuid {
+		p.LastGuid = firstGuid
+		p.LastUpdated = time.Now()
+	}
+}
+
+func (c *Checker) ProcessChannel(rss structs.RSSStruct, p *settings.Podcast) {
+	if len(rss.Channel.Item) == 0 {
+		log.Println(p.Url + " no items in channel")
+		return
+	}
+
+	var depth = DEFAULT_SEARCH_DEPTH
+
 	var firstGuid = "";
-	var depth = 5;
 	if p.MaxDepth > 0 {
 		depth = p.MaxDepth
 	}
@@ -154,12 +206,12 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 	var wasErrors = false;
 	for  _, i := range rss.Channel.Item {
 
-		log.Println("item hit")
+		log.Println("channel item hit")
 
 		var guid = i.Guid
 
 		if guid == "" {
-			guid = i.PubDate + " " + i.Title;
+			guid = i.PubDate + " " + i.Title
 		}
 
 		if firstGuid == "" {
@@ -174,25 +226,25 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 		if depth > 0 {
 			if i.Enclosure.URL != "" {
 
-				log.Println("url " + i.Enclosure.URL);
+				log.Println("url " + i.Enclosure.URL)
 
-				var isFilteredOk = true;
+				var isFilteredOk = true
 
 				if p.Filters != nil {
-					log.Println("filtering [", i.Title, "]...");
-					var isMatch = false;
+					log.Println("filtering [", i.Title, "]...")
+					var isMatch = false
 					for _, f := range p.Filters {
 						if strings.Contains(i.Title, f.Title) {
-							isMatch = true;
+							isMatch = true
 						}
 					}
-					isFilteredOk = isMatch;
+					isFilteredOk = isMatch
 
-					log.Println("filtered", isFilteredOk);
+					log.Println("filtered", isFilteredOk)
 				}
 
 				if isFilteredOk {
-					err := c.downloadPodcast(p, &i);
+					err := c.downloadPodcast(p, &i)
 					if err == nil {
 						p.Status = "downloaded ok"
 						log.Println("downloaded ok")
@@ -217,14 +269,6 @@ func (c *Checker) checkPodcast(p *settings.Podcast) {
 		p.LastGuid = firstGuid
 		p.LastUpdated = time.Now()
 	}
-
-	p.Status = "Checked successfully"
-
-	p.Name = rss.Channel.Title
-
-	log.Println("check finished: " + rss.Channel.Title + " (last updated: " + p.LastUpdated.String() + ")");
-
-	c.config.Save()
 }
 
 func (c *Checker) StartLoop() {
